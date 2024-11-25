@@ -1,0 +1,44 @@
+import java.util.*;
+public class Main {
+ private static StringBuffer shiftText(String text, int s, boolean encrypt) {
+ StringBuffer result = new StringBuffer();
+ for (int i = 0; i < text.length(); i++) {
+ char ch = text.charAt(i);
+ if (Character.isUpperCase(ch)) {
+ result.append(shiftChar(ch, s, 65, encrypt));
+ } else if (Character.isLowerCase(ch)) {
+ result.append(shiftChar(ch, s, 97, encrypt));
+ } else {
+ result.append(ch); 
+ }
+ }
+ return result; }
+ private static char shiftChar(char ch, int s, int base, boolean encrypt) {
+ if (encrypt) {
+ return (char) (((int) ch + s - base) % 26 + base);
+ } else {
+ return (char) (((int) ch - s - base + 26) % 26 + base);
+ }
+ }
+ public static void main(String[] args) {
+ Scanner sc = new Scanner(System.in);
+ System.out.println("Enter the text:");
+ String text = sc.nextLine();
+ System.out.println("Enter the key value:");
+ int s = sc.nextInt();
+ System.out.println("Choose:\n1. Encrypt\n2. Decrypt");
+ System.out.println("Enter number:");
+ int choice = sc.nextInt();
+ if (choice == 1) {
+ System.out.println("Text : " + text);
+ System.out.println("Shift : " + s);
+ System.out.println("Encrypted: " + shiftText(text, s, true));
+ } else if (choice == 2) {
+ System.out.println("Text : " + text);
+ System.out.println("Shift : " + s);
+ System.out.println("Decrypted: " + shiftText(text, s, false));
+ } else {
+ System.out.println("Invalid Choice");
+ }
+ }
+}
