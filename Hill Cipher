@@ -1,0 +1,117 @@
+import java.util.Scanner;
+public class HillCipher {
+ public static String key = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+ private static int[][] inverseMatrix(int[][] keymat) {
+ int det = keymat[0][0] * (keymat[1][1] * keymat[2][2] - keymat[1][2] *
+keymat[2][1])
+ - keymat[0][1] * (keymat[1][0] * keymat[2][2] - keymat[1][2] *
+keymat[2][0])
+ + keymat[0][2] * (keymat[1][0] * keymat[2][1] - keymat[1][1] *
+keymat[2][0]);
+ int detInverse = -1;
+ for (int i = 0; i < 26; i++) {
+ if ((det * i) % 26 == 1) {
+ detInverse = i;
+ break; }
+ }
+ if (detInverse == -1) {
+ throw new IllegalArgumentException("Determinant is not invertible under
+modulo 26.");
+ }
+ int[][] adjugateMatrix = {
+ {(keymat[1][1] * keymat[2][2] - keymat[1][2] * keymat[2][1]) % 26,
+(keymat[0][2] * keymat[2][1] - keymat[0][1] * keymat[2][2]) % 26, (keymat[0][1] *
+keymat[1][2] - keymat[0][2] * keymat[1][1]) % 26},
+ {(keymat[1][2] * keymat[2][0] - keymat[1][0] * keymat[2][2]) % 26,
+(keymat[0][0] * keymat[2][2] - keymat[0][2] * keymat[2][0]) % 26, (keymat[0][2] *
+keymat[1][0] - keymat[0][0] * keymat[1][2]) % 26},
+ {(keymat[1][0] * keymat[2][1] - keymat[1][1] * keymat[2][0]) % 26,
+(keymat[0][1] * keymat[2][0] - keymat[0][0] * keymat[2][1]) % 26, (keymat[0][0] *
+keymat[1][1] - keymat[0][1] * keymat[1][0]) % 26}
+ };
+ for (int i = 0; i < adjugateMatrix.length; i++) {
+ for (int j = 0; j < adjugateMatrix[0].length; j++) {
+ adjugateMatrix[i][j] = (adjugateMatrix[i][j] + 26) % 26;
+ }
+ }
+ int[][] inverseKeyMat = new int[3][3];
+ for (int i = 0; i < inverseKeyMat.length; i++) {
+ for (int j = 0; j < inverseKeyMat[0].length; j++) {
+ inverseKeyMat[i][j] = (adjugateMatrix[i][j] * detInverse) % 26;
+ if (inverseKeyMat[i][j] < 0) {
+ inverseKeyMat[i][j] += 26;
+ }
+ }
+ }
+ return inverseKeyMat;
+ }
+ private static String encode(char a, char b, char c, int[][] keymat) {
+ String ret = "";
+ int x, y, z;
+ int posa = (int) a - 65;
+ int posb = (int) b - 65;
+ int posc = (int) c - 65;
+ x = posa * keymat[0][0] + posb * keymat[1][0] + posc * keymat[2][0];
+ y = posa * keymat[0][1] + posb * keymat[1][1] + posc * keymat[2][1];
+ z = posa * keymat[0][2] + posb * keymat[1][2] + posc * keymat[2][2];
+ a = key.charAt(x % 26);
+ b = key.charAt(y % 26);
+ c = key.charAt(z % 26);
+ ret = "" + a + b + c;
+ return ret;
+ }
+ private static String decode(char a, char b, char c, int[][] invkeymat) {
+ String ret = "";
+ int x, y, z;
+ int posa = (int) a - 65;
+ int posb = (int) b - 65;
+ int posc = (int) c - 65;
+ x = posa * invkeymat[0][0] + posb * invkeymat[1][0] + posc * invkeymat[2][0];
+ y = posa * invkeymat[0][1] + posb * invkeymat[1][1] + posc * invkeymat[2][1];
+ z = posa * invkeymat[0][2] + posb * invkeymat[1][2] + posc * invkeymat[2][2];
+ a = key.charAt((x % 26 + 26) % 26); // handling negative modulo correctly
+ b = key.charAt((y % 26 + 26) % 26);
+ c = key.charAt((z % 26 + 26) % 26);
+ ret = "" + a + b + c;
+ return ret;
+ }
+ public static void main(String[] args) {
+ Scanner scanner = new Scanner(System.in);
+ System.out.println("Enter the 3x3 key matrix (row-wise, space-separated):");
+ int[][] keymat = new int[3][3];
+ for (int i = 0; i < 3; i++) {
+ for (int j = 0; j < 3; j++) {
+ keymat[i][j] = scanner.nextInt();
+ }
+ }
+ int[][] invkeymat = inverseMatrix(keymat);
+ System.out.println("Enter the plaintext (in uppercase, no spaces):");
+ String msg = scanner.next();
+ System.out.println("Simulation of Hill Cipher\n------------------------");
+ System.out.println("Input message : " + msg);
+ msg = msg.toUpperCase();
+ int n = msg.length() % 3; // check if padding is needed
+ if (n != 0) {
+ for (int i = 1; i <= (3 - n); i++) {
+ msg += 'X'; // append padding text 'X'
+ }
+ }
+ System.out.println("Padded message : " + msg);
+ StringBuilder enc = new StringBuilder();
+ StringBuilder dec = new StringBuilder();
+ char[] pdchars = msg.toCharArray();
+ // Encode the message
+ for (int i = 0; i < msg.length(); i += 3) {
+ enc.append(encode(pdchars[i], pdchars[i + 1], pdchars[i + 2], keymat));
+}
+ System.out.println("Encoded message : " + enc);
+ char[] dechars = enc.toString().toCharArray();
+ // Decode the message
+ for (int i = 0; i < enc.length(); i += 3) {
+ dec.append(decode(dechars[i], dechars[i + 1], dechars[i + 2],
+invkeymat));
+ }
+ System.out.println("Decoded message : " + dec);
+ scanner.close();
+ }
+}
